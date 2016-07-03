@@ -12,7 +12,7 @@
 ####config.plist  
  >
  > 1. certificate_name：证书的名字。例如：iPhone Developer: Shugang Li (G3BV9E076T)。  
- > 2. provisioning_profile：签名文件的uuid，可以用文本编辑器打开签名文件找到UUID。例如：146ca015-1ikg-78hb-45gd-4f7588255cc7。  
+ > 2. provisioning_profile：签名文件的uuid，可以用文本编辑器打开签名文件搜索UUID。例如：146ca015-1ikg-78hb-45gd-4f7588255cc7。  
  > 3. configuration：有Release,Debug,AdHoc等几个选项。  
  > 4. app_name：app的名字。  
  > 5. project_name：工程的名字，就是根目录里面的yourproject.xcodeproj去掉.xcodeproj。  
