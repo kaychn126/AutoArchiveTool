@@ -18,6 +18,7 @@
  > 5. project_name：工程的名字，就是根目录里面的yourproject.xcodeproj去掉.xcodeproj。  
  > 6. pgyer_ukey：蒲公英的uKey。  
  > 7. pgyer_apikey：蒲公英的apiKey。  
+ > 8. scheme_name：Scheme 名称
  
 ####exportOptions.plist文件中各字段的意义：
  
