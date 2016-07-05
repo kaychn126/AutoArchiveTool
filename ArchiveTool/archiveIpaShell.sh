@@ -15,11 +15,16 @@ scheme_name=`/usr/libexec/PlistBuddy -c "print scheme_name" ${config_file}`
 cd ..
 
 #log日志文件
-log_path="ArchiveTool/ArchivePackage/archiveLog.txt"
+log_path="ArchiveTool/ArchivePackage/archiveLog.log"
+
+#检查日志文件是否存在
+if [ ! -f "$log_path" ]; then
+  touch "$log_path"
+fi
 
 #时间戳
 buildTime=$(date +%Y%m%d%H%M)
-echo "\r\r开始打包，日期：$buildTime" >> $log_path
+echo "\r\r$(date +%Y年%m月%d日%H时%M分)：${ipa_name}开始打包" >> $log_path
 
 if [ ! -d "ArchiveTool/ArchivePackage" ];
 then
@@ -53,14 +58,23 @@ xctool -workspace ${project_name}.xcworkspace -scheme ${scheme_name} -configurat
 
 #打包
 xctool -workspace ${project_name}.xcworkspace -scheme ${scheme_name} -configuration ${configuration} archive -archivePath ${buildPath}
-echo "打包Archive完成，开始导出ipa包" >> $log_path
 
-#导出ipa包
-xcrun xcodebuild -exportArchive -exportOptionsPlist ${exportPlistName} -archivePath ${buildPath} -exportPath ${ipaDirPath}
-CODE_SIGN_IDENTITY=${certificate_name}
-PROVISIONING_PROFILE=${provisioning_profile} >> $log_path
+if [ ! -f "$buildPath" ]; then
+  echo "\r$(date +%Y年%m月%d日%H时%M分)：打包Archive失败" >> $log_path
+else
+  echo "\r$(date +%Y年%m月%d日%H时%M分)：打包Archive完成，开始导出ipa包" >> $log_path
+  #导出ipa包
+  xcrun xcodebuild -exportArchive -exportOptionsPlist ${exportPlistName} -archivePath ${buildPath} -exportPath ${ipaDirPath}
+  CODE_SIGN_IDENTITY=${certificate_name}
+  PROVISIONING_PROFILE=${provisioning_profile} >> $log_path
 
-#上传包到蒲公英
-ipaFullPath=$(cd "$(dirname "$0")";pwd)/${ipaDirPath}/${ipa_name}.ipa
+  #上传包到蒲公英
+  ipaFullPath=$(cd "$(dirname "$0")";pwd)/${ipaDirPath}/${ipa_name}.ipa
 
-curl -F "file=@${ipaFullPath}" -F "uKey=${pgyer_ukey}" -F "_api_key=${pgyer_apikey}" http://www.pgyer.com/apiv1/app/upload >> $log_path
+  if [ ! -f "$ipaFullPath" ]; then
+    echo "\r$(date +%Y年%m月%d日%H时%M分)：导出ipa包失败" >> $log_path
+  else
+    echo "\r$(date +%Y年%m月%d日%H时%M分)：ipa包上传蒲公英，蒲公英返回值为：" >> $log_path
+    curl -F "file=@${ipaFullPath}" -F "uKey=${pgyer_ukey}" -F "_api_key=${pgyer_apikey}" http://www.pgyer.com/apiv1/app/upload >> $log_path
+  fi
+fi
