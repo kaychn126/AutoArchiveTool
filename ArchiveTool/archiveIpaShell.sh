@@ -59,22 +59,18 @@ xctool -workspace ${project_name}.xcworkspace -scheme ${scheme_name} -configurat
 #打包
 xctool -workspace ${project_name}.xcworkspace -scheme ${scheme_name} -configuration ${configuration} archive -archivePath ${buildPath}
 
-if [ ! -f "$buildPath" ]; then
-  echo "\r$(date +%Y年%m月%d日%H时%M分)：打包Archive失败" >> $log_path
+echo "\r$(date +%Y年%m月%d日%H时%M分)：打包Archive完成，开始导出ipa包" >> $log_path
+#导出ipa包
+xcrun xcodebuild -exportArchive -exportOptionsPlist ${exportPlistName} -archivePath ${buildPath} -exportPath ${ipaDirPath}
+CODE_SIGN_IDENTITY=${certificate_name}
+PROVISIONING_PROFILE=${provisioning_profile} >> $log_path
+
+#上传包到蒲公英
+ipaFullPath=$(cd "$(dirname "$0")";pwd)/${ipaDirPath}/${ipa_name}.ipa
+
+if [ ! -f "$ipaFullPath" ]; then
+  echo "\r$(date +%Y年%m月%d日%H时%M分)：导出ipa包失败" >> $log_path
 else
-  echo "\r$(date +%Y年%m月%d日%H时%M分)：打包Archive完成，开始导出ipa包" >> $log_path
-  #导出ipa包
-  xcrun xcodebuild -exportArchive -exportOptionsPlist ${exportPlistName} -archivePath ${buildPath} -exportPath ${ipaDirPath}
-  CODE_SIGN_IDENTITY=${certificate_name}
-  PROVISIONING_PROFILE=${provisioning_profile} >> $log_path
-
-  #上传包到蒲公英
-  ipaFullPath=$(cd "$(dirname "$0")";pwd)/${ipaDirPath}/${ipa_name}.ipa
-
-  if [ ! -f "$ipaFullPath" ]; then
-    echo "\r$(date +%Y年%m月%d日%H时%M分)：导出ipa包失败" >> $log_path
-  else
-    echo "\r$(date +%Y年%m月%d日%H时%M分)：ipa包上传蒲公英，蒲公英返回值为：" >> $log_path
-    curl -F "file=@${ipaFullPath}" -F "uKey=${pgyer_ukey}" -F "_api_key=${pgyer_apikey}" http://www.pgyer.com/apiv1/app/upload >> $log_path
-  fi
+  echo "\r$(date +%Y年%m月%d日%H时%M分)：ipa包上传蒲公英，蒲公英返回值为：" >> $log_path
+  curl -F "file=@${ipaFullPath}" -F "uKey=${pgyer_ukey}" -F "_api_key=${pgyer_apikey}" http://www.pgyer.com/apiv1/app/upload >> $log_path
 fi
